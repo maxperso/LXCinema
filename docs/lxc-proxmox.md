@@ -138,7 +138,9 @@ FFmpeg log) and never touched the GPU. My "verification" was one of those.
 ### iGPU: the fix, Proxmox device passthrough
 
 Proxmox can create a device node inside the container with the owner you
-choose (`devN:` entries, added in Proxmox VE 8.1; this host runs 9.2.6).
+choose: `devN:` entries, available from the command line and API since
+Proxmox VE 8.1 and in the web UI since 8.2. This host runs 9.2.6
+(`pveversion`: `pve-manager/9.2.6`).
 It replaces the three lines above:
 
 ```
@@ -151,7 +153,8 @@ Or from the host shell, container stopped:
 pct set <CTID> -dev0 /dev/dri/renderD128,gid=1000
 ```
 
-The web UI has the same thing under Resources > Add > Device Passthrough.
+The web UI (8.2 and later) has the same thing under Resources > Add >
+Device Passthrough.
 
 QSV only needs the render node, so `card*` doesn't have to be passed at all.
 Check the render node's name with `ls -l /dev/dri` on the host; it's usually
