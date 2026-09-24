@@ -1,0 +1,62 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="880" height="450" viewBox="0 0 880 450" font-family="sans-serif">
+  <defs>
+    <marker id="b" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M0,0 L10,5 L0,10 z" fill="#1d4ed8"/>
+    </marker>
+    <marker id="o" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M0,0 L10,5 L0,10 z" fill="#d97706"/>
+    </marker>
+  </defs>
+
+  <rect width="880" height="450" fill="#ffffff"/>
+  <text x="16" y="25" font-size="14" font-weight="bold" fill="#111">qBittorrent's network path and the forwarded-port loop</text>
+
+  <!-- peers -->
+  <rect x="20" y="96" width="140" height="42" fill="#ffffff" stroke="#999"/>
+  <text x="30" y="114" font-size="11" fill="#111">Peers</text>
+  <text x="30" y="130" font-size="9.5" fill="#666">the open internet</text>
+  <line x1="160" y1="117" x2="212" y2="117" stroke="#1d4ed8" stroke-width="1.5" marker-end="url(#b)"/>
+  <text x="163" y="108" font-size="9" fill="#1d4ed8">ProtonVPN</text>
+
+  <!-- namespace -->
+  <rect x="216" y="70" width="450" height="270" fill="#fffbf4" stroke="#d97706"/>
+  <text x="228" y="90" font-size="11.5" font-weight="bold" fill="#92400e">gluetun network namespace</text>
+
+  <rect x="232" y="100" width="150" height="42" fill="#ffffff" stroke="#c9a227"/>
+  <text x="242" y="118" font-size="11" fill="#111">wg0</text>
+  <text x="242" y="134" font-size="9.5" fill="#666">WireGuard tunnel</text>
+
+  <rect x="466" y="100" width="182" height="42" fill="#ffffff" stroke="#c9a227"/>
+  <text x="476" y="118" font-size="11" fill="#111">qbittorrent</text>
+  <text x="476" y="134" font-size="9.5" fill="#666">listens on the forwarded port</text>
+
+  <line x1="382" y1="121" x2="460" y2="121" stroke="#1d4ed8" stroke-width="1.5" marker-end="url(#b)"/>
+
+  <rect x="232" y="186" width="250" height="38" fill="#ffffff" stroke="#c9a227"/>
+  <text x="242" y="210" font-size="9.5" font-family="monospace" fill="#444">/gluetun/forwarded_port</text>
+  <line x1="307" y1="142" x2="307" y2="182" stroke="#d97706" stroke-width="1.5" marker-end="url(#o)"/>
+  <text x="315" y="168" font-size="9" fill="#92400e">Proton assigns a new port on every reconnect</text>
+
+  <rect x="232" y="268" width="250" height="42" fill="#ffffff" stroke="#c9a227"/>
+  <text x="242" y="286" font-size="11" fill="#111">port-sync</text>
+  <text x="242" y="302" font-size="9.5" fill="#666">reads the file, pushes the port</text>
+  <line x1="307" y1="224" x2="307" y2="264" stroke="#d97706" stroke-width="1.5" marker-end="url(#o)"/>
+
+  <path d="M482,289 L630,289 L630,146" fill="none" stroke="#d97706" stroke-width="1.5" marker-end="url(#o)"/>
+  <text x="440" y="262" font-size="9" font-family="monospace" fill="#92400e">POST /api/v2/app/setPreferences</text>
+  <text x="440" y="248" font-size="9" fill="#92400e">from localhost, no credentials</text>
+
+  <!-- arr side -->
+  <rect x="704" y="96" width="156" height="60" fill="#ffffff" stroke="#999"/>
+  <text x="714" y="114" font-size="11" fill="#111">sonarr · radarr</text>
+  <text x="714" y="130" font-size="11" fill="#111">prowlarr</text>
+  <text x="714" y="147" font-size="9.5" fill="#666">on the bridge network</text>
+  <line x1="704" y1="126" x2="654" y2="126" stroke="#1d4ed8" stroke-width="1.5" marker-end="url(#b)"/>
+
+  <!-- notes -->
+  <rect x="16" y="360" width="848" height="74" fill="#f4f4f5" stroke="#bbb"/>
+  <text x="28" y="380" font-size="10.5" font-weight="bold" fill="#333">Two consequences</text>
+  <text x="28" y="399" font-size="10" fill="#333">qBittorrent has no network stack of its own, so Docker DNS has no entry for it. In Sonarr, Radarr and Prowlarr the download-client</text>
+  <text x="28" y="414" font-size="10" fill="#333">host is gluetun, port 8080 — not qbittorrent. Some ISPs resolve the unknown name to an unrelated public server, so the failure</text>
+  <text x="28" y="429" font-size="10" fill="#333">does not look like DNS. And port-sync calls the WebUI unauthenticated: "Bypass authentication for clients on localhost" must be on.</text>
+</svg>

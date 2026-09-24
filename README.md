@@ -5,6 +5,15 @@ qBittorrent behind a VPN, Seerr) running in Docker inside an **unprivileged
 LXC container on Proxmox**, with the Intel iGPU passed through for
 QuickSync hardware transcoding.
 
+![Proxmox host running an unprivileged LXC; inside it, Docker Compose with
+gluetun's network namespace holding qbittorrent and port-sync, and jellyfin,
+seerr, sonarr, radarr, prowlarr and bazarr on the bridge network. The host's
+/dev/net/tun and /dev/dri/renderD128 are passed into the
+container.](docs/images/architecture.svg)
+
+Everything runs in one unprivileged LXC; only Jellyfin gets the GPU, and only
+qBittorrent goes through the VPN.
+
 ## Why another media stack repo
 
 There are dozens of them, and the good ones are years ahead of this one. If
@@ -127,6 +136,11 @@ host is **`gluetun`, not `qbittorrent`**. Docker's DNS has no entry for a
 container without its own network stack, and on some ISPs the unresolved
 name leaks to public DNS and quietly resolves to some unrelated server. The
 connection test then fails with errors that don't look like DNS at all.
+
+![qBittorrent and port-sync share gluetun's network namespace. Gluetun writes
+Proton's forwarded port to /gluetun/forwarded_port, port-sync reads it and
+pushes it to qBittorrent's WebUI from localhost. The *arr services reach the
+client at host gluetun, port 8080.](docs/images/vpn-port-flow.svg)
 
 ### Proton's forwarded port changes on every reconnect
 

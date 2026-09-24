@@ -1,0 +1,95 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="920" height="600" viewBox="0 0 920 600" font-family="sans-serif">
+  <defs>
+    <marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M0,0 L10,5 L0,10 z" fill="#0f766e"/>
+    </marker>
+    <marker id="g" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M0,0 L10,5 L0,10 z" fill="#666"/>
+    </marker>
+  </defs>
+
+  <rect width="920" height="600" fill="#ffffff"/>
+  <text x="16" y="25" font-size="14" font-weight="bold" fill="#111">LXCinema — architecture</text>
+
+  <!-- Proxmox host -->
+  <rect x="16" y="40" width="888" height="498" fill="#f7f7f7" stroke="#8a8a8a" stroke-width="1"/>
+  <text x="28" y="62" font-size="12" font-weight="bold" fill="#333">Proxmox host — Lenovo ThinkCentre M720q · i5-8500T (UHD Graphics 630) · 16 GB</text>
+
+  <rect x="180" y="76" width="190" height="30" fill="#ffffff" stroke="#0f766e"/>
+  <text x="190" y="96" font-size="10.5" font-family="monospace" fill="#0f766e">/dev/net/tun</text>
+
+  <rect x="600" y="76" width="230" height="30" fill="#ffffff" stroke="#0f766e"/>
+  <text x="610" y="96" font-size="10.5" font-family="monospace" fill="#0f766e">/dev/dri/renderD128</text>
+
+  <line x1="275" y1="106" x2="275" y2="122" stroke="#0f766e" stroke-width="1.5" marker-end="url(#a)"/>
+  <line x1="715" y1="106" x2="715" y2="122" stroke="#0f766e" stroke-width="1.5" marker-end="url(#a)"/>
+
+  <!-- LXC -->
+  <rect x="36" y="124" width="848" height="398" fill="#ffffff" stroke="#444" stroke-width="1"/>
+  <text x="48" y="146" font-size="12" font-weight="bold" fill="#111">LXC 111 · media-stack · unprivileged · Debian 13 · 4 cores / 6 GB / 90 GB</text>
+  <text x="48" y="164" font-size="10.5" fill="#555">features: keyctl=1, nesting=1</text>
+  <text x="180" y="184" font-size="10" font-family="monospace" fill="#0f766e">lxc.cgroup2.devices.allow: c 10:200 rwm</text>
+  <text x="600" y="184" font-size="10" font-family="monospace" fill="#0f766e">dev0: /dev/dri/renderD128,gid=1000</text>
+
+  <!-- Docker -->
+  <rect x="56" y="198" width="808" height="310" fill="#fafafa" stroke="#777"/>
+  <text x="68" y="218" font-size="11.5" font-weight="bold" fill="#333">Docker Compose</text>
+
+  <!-- gluetun namespace -->
+  <rect x="72" y="232" width="350" height="250" fill="#fffbf4" stroke="#d97706"/>
+  <text x="82" y="252" font-size="11" font-weight="bold" fill="#92400e">gluetun — shared network namespace</text>
+  <text x="82" y="268" font-size="10.5" fill="#92400e">ProtonVPN WireGuard · kill-switch</text>
+  <text x="82" y="285" font-size="10" font-family="monospace" fill="#0f766e">devices: /dev/net/tun</text>
+
+  <rect x="84" y="296" width="326" height="34" fill="#ffffff" stroke="#c9a227"/>
+  <text x="94" y="317" font-size="11" fill="#111">qbittorrent</text>
+  <text x="400" y="317" font-size="10" font-family="monospace" fill="#555" text-anchor="end">:8080</text>
+
+  <rect x="84" y="338" width="326" height="34" fill="#ffffff" stroke="#c9a227"/>
+  <text x="94" y="359" font-size="11" fill="#111">port-sync</text>
+  <text x="400" y="359" font-size="9.5" fill="#666" text-anchor="end">Proton forwarded port</text>
+
+  <text x="82" y="396" font-size="10" fill="#92400e">No network stack of their own: all traffic exits</text>
+  <text x="82" y="411" font-size="10" fill="#92400e">through the tunnel, and both are reachable as</text>
+  <text x="82" y="426" font-size="10" fill="#92400e">host "gluetun", never "qbittorrent".</text>
+  <text x="82" y="448" font-size="10" fill="#92400e">No torrent port is published on the LAN.</text>
+
+  <!-- bridge services -->
+  <text x="438" y="252" font-size="11" font-weight="bold" fill="#333">compose default network</text>
+
+  <rect x="438" y="264" width="196" height="44" fill="#ffffff" stroke="#0f766e"/>
+  <text x="448" y="282" font-size="11" fill="#111">jellyfin</text>
+  <text x="624" y="282" font-size="10" font-family="monospace" fill="#555" text-anchor="end">:8096</text>
+  <text x="448" y="299" font-size="9.5" font-family="monospace" fill="#0f766e">devices: /dev/dri</text>
+
+  <rect x="650" y="264" width="196" height="44" fill="#ffffff" stroke="#999"/>
+  <text x="660" y="282" font-size="11" fill="#111">seerr</text>
+  <text x="836" y="282" font-size="10" font-family="monospace" fill="#555" text-anchor="end">:5055</text>
+  <text x="660" y="299" font-size="9.5" fill="#666">media requests</text>
+
+  <rect x="438" y="316" width="196" height="36" fill="#ffffff" stroke="#999"/>
+  <text x="448" y="338" font-size="11" fill="#111">sonarr</text>
+  <text x="624" y="338" font-size="10" font-family="monospace" fill="#555" text-anchor="end">:8989</text>
+
+  <rect x="650" y="316" width="196" height="36" fill="#ffffff" stroke="#999"/>
+  <text x="660" y="338" font-size="11" fill="#111">radarr</text>
+  <text x="836" y="338" font-size="10" font-family="monospace" fill="#555" text-anchor="end">:7878</text>
+
+  <rect x="438" y="360" width="196" height="36" fill="#ffffff" stroke="#999"/>
+  <text x="448" y="382" font-size="11" fill="#111">prowlarr</text>
+  <text x="624" y="382" font-size="10" font-family="monospace" fill="#555" text-anchor="end">:9696</text>
+
+  <rect x="650" y="360" width="196" height="36" fill="#ffffff" stroke="#999"/>
+  <text x="660" y="382" font-size="11" fill="#111">bazarr</text>
+  <text x="836" y="382" font-size="10" font-family="monospace" fill="#555" text-anchor="end">:6767</text>
+
+  <text x="438" y="416" font-size="10" fill="#555">prowlarr pins dns: 1.1.1.1 / 9.9.9.9 — some ISPs hijack failed lookups</text>
+  <text x="438" y="433" font-size="10" fill="#555">config: ./&lt;service&gt;/config · media: /data/{tv,movies,torrents}</text>
+  <text x="438" y="450" font-size="10" fill="#555">bazarr mounts the same paths as radarr and sonarr</text>
+
+  <!-- outside -->
+  <line x1="200" y1="538" x2="200" y2="556" stroke="#666" stroke-width="1.5" marker-end="url(#g)"/>
+  <line x1="700" y1="538" x2="700" y2="556" stroke="#666" stroke-width="1.5" marker-end="url(#g)"/>
+  <text x="40" y="578" font-size="10.5" fill="#444">LAN 192.168.1.0/24 — remote access through a separate WireGuard LXC</text>
+  <text x="540" y="578" font-size="10.5" fill="#444">qBittorrent reaches the internet only via ProtonVPN</text>
+</svg>

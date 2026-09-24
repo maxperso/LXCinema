@@ -1,0 +1,82 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="570" viewBox="0 0 900 570" font-family="sans-serif">
+  <defs>
+    <marker id="r" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M0,0 L10,5 L0,10 z" fill="#b91c1c"/>
+    </marker>
+    <marker id="v" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M0,0 L10,5 L0,10 z" fill="#15803d"/>
+    </marker>
+  </defs>
+
+  <rect width="900" height="570" fill="#ffffff"/>
+  <text x="16" y="25" font-size="14" font-weight="bold" fill="#111">Why the iGPU is visible but not usable in an unprivileged LXC</text>
+
+  <!-- LEFT -->
+  <text x="24" y="52" font-size="12" font-weight="bold" fill="#b91c1c">The recipe most guides give</text>
+  <text x="24" y="69" font-size="9.5" font-family="monospace" fill="#666">cgroup2.devices.allow + bind mount of /dev/dri</text>
+
+  <rect x="24" y="80" width="400" height="48" fill="#fafafa" stroke="#999"/>
+  <text x="34" y="98" font-size="11" fill="#111">Proxmox host</text>
+  <text x="34" y="116" font-size="9.5" font-family="monospace" fill="#444">renderD128  root:render  crw-rw----</text>
+  <line x1="224" y1="128" x2="224" y2="148" stroke="#b91c1c" stroke-width="1.5" marker-end="url(#r)"/>
+
+  <rect x="24" y="152" width="400" height="48" fill="#fafafa" stroke="#999"/>
+  <text x="34" y="170" font-size="11" fill="#111">LXC 111</text>
+  <text x="34" y="188" font-size="9.5" font-family="monospace" fill="#b91c1c">nobody:nogroup (65534)  crw-rw----</text>
+  <line x1="224" y1="200" x2="224" y2="220" stroke="#b91c1c" stroke-width="1.5" marker-end="url(#r)"/>
+
+  <rect x="24" y="224" width="400" height="48" fill="#fafafa" stroke="#999"/>
+  <text x="34" y="242" font-size="11" fill="#111">jellyfin container</text>
+  <text x="34" y="260" font-size="9.5" font-family="monospace" fill="#b91c1c">nobody:nogroup  crw-rw----</text>
+  <line x1="224" y1="272" x2="224" y2="292" stroke="#b91c1c" stroke-width="1.5" marker-end="url(#r)"/>
+
+  <rect x="24" y="296" width="400" height="48" fill="#fff5f5" stroke="#b91c1c"/>
+  <text x="34" y="314" font-size="11" fill="#111">jellyfin process</text>
+  <text x="34" y="332" font-size="9.5" font-family="monospace" fill="#444">uid 1000, groups 100 1000  —  cannot open it</text>
+
+  <text x="24" y="372" font-size="10.5" font-weight="bold" fill="#b91c1c">What you actually see</text>
+  <text x="24" y="392" font-size="9.5" font-family="monospace" fill="#444">vainfo: Failed to open the given device!</text>
+  <text x="24" y="409" font-size="9.5" font-family="monospace" fill="#444">[VAAPI] No VA display found for device</text>
+  <text x="72" y="424" font-size="9.5" font-family="monospace" fill="#444">/dev/dri/renderD128.</text>
+  <text x="24" y="441" font-size="9.5" font-family="monospace" fill="#444">Device creation failed: -22.</text>
+  <text x="24" y="464" font-size="10" fill="#b91c1c">Jellyfin does not fall back to software.</text>
+  <text x="24" y="480" font-size="10" fill="#b91c1c">Playback simply fails, and only when something</text>
+  <text x="24" y="496" font-size="10" fill="#b91c1c">actually has to be transcoded.</text>
+
+  <!-- RIGHT -->
+  <text x="476" y="52" font-size="12" font-weight="bold" fill="#15803d">Proxmox device passthrough</text>
+  <text x="476" y="69" font-size="9.5" font-family="monospace" fill="#666">dev0: /dev/dri/renderD128,gid=1000</text>
+
+  <rect x="476" y="80" width="400" height="48" fill="#fafafa" stroke="#999"/>
+  <text x="486" y="98" font-size="11" fill="#111">Proxmox host</text>
+  <text x="486" y="116" font-size="9.5" fill="#444">creates the node inside the container, with a chosen gid</text>
+  <line x1="676" y1="128" x2="676" y2="148" stroke="#15803d" stroke-width="1.5" marker-end="url(#v)"/>
+
+  <rect x="476" y="152" width="400" height="48" fill="#fafafa" stroke="#999"/>
+  <text x="486" y="170" font-size="11" fill="#111">LXC 111</text>
+  <text x="486" y="188" font-size="9.5" font-family="monospace" fill="#15803d">root:1000  crw-rw----</text>
+  <line x1="676" y1="200" x2="676" y2="220" stroke="#15803d" stroke-width="1.5" marker-end="url(#v)"/>
+
+  <rect x="476" y="224" width="400" height="48" fill="#fafafa" stroke="#999"/>
+  <text x="486" y="242" font-size="11" fill="#111">jellyfin container</text>
+  <text x="486" y="260" font-size="9.5" font-family="monospace" fill="#15803d">root:abc  crw-rw----</text>
+  <line x1="676" y1="272" x2="676" y2="292" stroke="#15803d" stroke-width="1.5" marker-end="url(#v)"/>
+
+  <rect x="476" y="296" width="400" height="48" fill="#f3faf4" stroke="#15803d"/>
+  <text x="486" y="314" font-size="11" fill="#111">jellyfin process</text>
+  <text x="486" y="332" font-size="9.5" font-family="monospace" fill="#444">uid 1000, member of gid 1000  —  opens it</text>
+
+  <text x="476" y="372" font-size="10.5" font-weight="bold" fill="#15803d">After the change</text>
+  <text x="476" y="392" font-size="9.5" font-family="monospace" fill="#444">vainfo: Intel iHD driver for Intel(R) Gen</text>
+  <text x="524" y="407" font-size="9.5" font-family="monospace" fill="#444">Graphics - 26.2.4</text>
+  <text x="476" y="428" font-size="10" fill="#444">h264_qsv and hevc_qsv encodes succeed, and the</text>
+  <text x="476" y="444" font-size="10" fill="#444">playback that failed before now plays.</text>
+  <text x="476" y="470" font-size="10" fill="#666">gid=1000 is the stack's PGID. Using the LXC's own</text>
+  <text x="476" y="486" font-size="10" fill="#666">render group (992) did not work: the image never</text>
+  <text x="476" y="502" font-size="10" fill="#666">added its user to that group.</text>
+
+  <!-- bottom -->
+  <rect x="16" y="516" width="868" height="44" fill="#f4f4f5" stroke="#bbb"/>
+  <text x="28" y="534" font-size="10" fill="#333">An unprivileged LXC maps container uid/gid 0–65535 onto host 100000–165535. The host's render group falls outside that</text>
+  <text x="28" y="550" font-size="10" fill="#333">range, so the kernel shows it as the overflow id 65534. The cgroup lines allow access to the device; they do not change its owner.</text>
+</svg>

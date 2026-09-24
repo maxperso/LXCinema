@@ -91,6 +91,12 @@ draft of this page.
 
 It didn't. Here is what each layer actually saw:
 
+![Left, the usual recipe: renderD128 is root:render on the host, appears as
+nobody:nogroup in the LXC and in the container, and the jellyfin process
+running as uid 1000 cannot open it. Right, with dev0 passthrough: the node is
+root:1000 in the LXC, root:abc in the container, and the process opens
+it.](images/igpu-ownership.svg)
+
 | Where | `renderD128` | Who can open it |
 |---|---|---|
 | Proxmox host | `root:render`, `crw-rw----` | root and the host's `render` group |
