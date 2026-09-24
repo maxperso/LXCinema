@@ -172,7 +172,7 @@ services:
 
   # Pinned to an exact version on purpose, do not switch to latest.
   # Each Jellyfin upgrade runs a database migration that cannot be undone
-  # without restoring a backup. See docs/migration-2026-09.md.
+  # without restoring a backup. Follow docs/upgrade-runbook.md to move it.
   #
   # Without `hostname`, Jellyfin names itself after the container ID, which
   # changes every time the container is recreated.
