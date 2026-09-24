@@ -103,11 +103,15 @@ history doesn't help, you have to revoke it.
 ### Back up Jellyfin before upgrading
 
 Stop the container first: a SQLite database copied mid-write may not be
-usable.
+usable. Run this **before** changing the tag in the compose file, so the
+archive is named after the version it restores to. An archive is only
+useful with that exact version; once the next migration has run, it can't
+be applied to the new one.
 
 ```bash
 docker compose stop jellyfin
-tar czf ~/jellyfin-config-$(date +%F).tar.gz -C jellyfin config
+JF_TAG=$(docker compose config --images | grep jellyfin | cut -d: -f2)
+tar czf ~/jellyfin-config-$JF_TAG-$(date +%F).tar.gz -C jellyfin config
 ```
 
 ### qBittorrent has no network identity of its own
@@ -123,6 +127,15 @@ connection test then fails with errors that don't look like DNS at all.
 
 The `port-sync` service pushes the current port into qBittorrent. Without
 it, torrents sit at "no incoming connections" with no obvious reason.
+
+[port-sync/sync-port.sh](port-sync/sync-port.sh) talks to the WebUI API
+without credentials. It shares Gluetun's network namespace, so its requests
+come from localhost: enable **Bypass authentication for clients on
+localhost** in qBittorrent (Options > WebUI), or every update fails.
+
+That's also why the compose file publishes no torrent port. Don't forward
+6881 on your home router to "fix" connectivity: peers would reach the
+client on your real IP, which defeats the VPN.
 
 ## Known limitations
 
