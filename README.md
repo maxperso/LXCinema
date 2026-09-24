@@ -35,6 +35,7 @@ outdated version. The full account, including what I got wrong, is in
 |---|---|
 | [docs/lxc-proxmox.md](docs/lxc-proxmox.md) | The LXC config (nesting, keyctl, iGPU and TUN passthrough), why the usual iGPU recipe fails, and how to confirm transcoding really is hardware |
 | [docs/migration-2026-09.md](docs/migration-2026-09.md) | Jellyfin 10.10.7 → 12.1 and Jellyseerr → Seerr, as it happened on 24 September 2026 |
+| [docs/troubleshooting.md](docs/troubleshooting.md) | Symptom → cause table, with the exact error strings |
 | [scripts/check-igpu.sh](scripts/check-igpu.sh) | Checks the iGPU layer by layer, from the Proxmox host to a real QSV encode in the container |
 
 ## Quick start
