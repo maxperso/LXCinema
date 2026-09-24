@@ -1,0 +1,45 @@
+# Secrets. Never commit these.
+.env
+.env.*
+!.env.example
+*.key
+*.pem
+*.conf.local
+
+# Service config directories hold API keys, indexer passkeys, passwords,
+# databases and session tokens. This repo should never contain them in the
+# first place (it is a separate folder from the production one); these
+# entries are a second line of defence.
+gluetun/
+qbittorrent/
+prowlarr/
+sonarr/
+radarr/
+bazarr/
+seerr/
+jellyseerr/
+jellyfin/
+*/config/
+
+# Local working notes, describe the private network. Not published.
+CLAUDE.md
+
+# Backups and working files
+*.bak
+*.tar.gz
+*.tgz
+*.zip
+*.sqlite
+*.db
+*.db-wal
+*.db-shm
+*.log
+
+# OS and editors
+.DS_Store
+Thumbs.db
+*.swp
+*~
+.idea/
+.vscode/
+!.vscode/extensions.json

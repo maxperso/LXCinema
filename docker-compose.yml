@@ -1,0 +1,200 @@
+# LXCinema: media stack running in Docker inside an unprivileged Proxmox LXC.
+#
+# Secrets live in .env (see .env.example). Nothing in this file is sensitive.
+#
+# Image tags: Jellyfin is pinned to an exact version because its upgrades
+# run irreversible database migrations. Seerr follows its major-version tag
+# (v3). Everything else tracks latest. Reasoning in README.md, "Image tags".
+
+services:
+
+  # VPN exit for qBittorrent. qBittorrent has no network stack of its own
+  # (network_mode: service:gluetun), so if the tunnel drops it loses all
+  # connectivity. That is the kill switch.
+  # Needs /dev/net/tun passed through to the LXC, see docs/lxc-proxmox.md.
+  gluetun:
+    image: qmcgaw/gluetun:latest
+    container_name: gluetun
+    cap_add:
+      - NET_ADMIN
+    devices:
+      - /dev/net/tun:/dev/net/tun
+    environment:
+      - VPN_SERVICE_PROVIDER=protonvpn
+      - VPN_TYPE=wireguard
+      - WIREGUARD_PRIVATE_KEY=${WIREGUARD_PRIVATE_KEY}
+      - WIREGUARD_ADDRESSES=${WIREGUARD_ADDRESSES}
+      - SERVER_COUNTRIES=${PROTONVPN_COUNTRY:-Netherlands}
+      - VPN_PORT_FORWARDING=on
+      - VPN_PORT_FORWARDING_PROVIDER=protonvpn
+      - PORT_FORWARD_ONLY=on
+      - TZ=${TZ:-Europe/Paris}
+      - VPN_PORT_FORWARDING_STATUS_FILE=/gluetun/forwarded_port
+    ports:
+      # Published by gluetun on qBittorrent's behalf: a container using
+      # network_mode: service:gluetun cannot publish ports itself.
+      - 8080:8080          # qBittorrent WebUI
+      - 6881:6881          # torrent port, TCP
+      - 6881:6881/udp      # torrent port, UDP
+    volumes:
+      - ./gluetun:/gluetun
+    restart: unless-stopped
+
+  qbittorrent:
+    image: lscr.io/linuxserver/qbittorrent:latest
+    container_name: qbittorrent
+    depends_on:
+      gluetun:
+        condition: service_healthy
+    network_mode: "service:gluetun"
+    environment:
+      - PUID=${PUID:-1000}
+      - PGID=${PGID:-1000}
+      - TZ=${TZ:-Europe/Paris}
+      - WEBUI_PORT=8080
+      - TORRENTING_PORT=6881
+    volumes:
+      - ./qbittorrent/config:/config
+      - ${DATA_ROOT:-/data}/torrents:/downloads
+    restart: unless-stopped
+
+  # Proton assigns a new forwarded port every time the tunnel reconnects.
+  # This pushes the current one into qBittorrent. Without it, qBittorrent
+  # keeps listening on a dead port and torrents end up with no incoming
+  # connections.
+  #
+  # curlimages/curl ships with curl, unlike alpine + `apk add curl` at every
+  # start, which depends on the Alpine mirrors being reachable.
+  # Not verified here: curlimages/curl runs as UID 100, not root. If
+  # sync-port.sh writes anywhere other than stdout, check permissions first.
+  # Previous working setup:
+  #   image: alpine:latest
+  #   entrypoint: ["/bin/sh", "-c", "apk add --no-cache curl >/dev/null && /sync-port.sh"]
+  port-sync:
+    image: curlimages/curl:latest
+    container_name: port-sync
+    depends_on:
+      gluetun:
+        condition: service_healthy
+      qbittorrent:
+        condition: service_started
+    network_mode: "service:gluetun"
+    volumes:
+      - ./gluetun:/gluetun:ro
+      - ./port-sync/sync-port.sh:/sync-port.sh:ro
+    entrypoint: ["/bin/sh", "/sync-port.sh"]
+    restart: unless-stopped
+
+  # DNS is forced because some ISPs (SFR among them) hijack failed lookups
+  # and answer with their own servers. Indexer tests then fail with errors
+  # that look nothing like a DNS problem.
+  prowlarr:
+    image: lscr.io/linuxserver/prowlarr:latest
+    container_name: prowlarr
+    dns:
+      - 1.1.1.1
+      - 9.9.9.9
+    environment:
+      - PUID=${PUID:-1000}
+      - PGID=${PGID:-1000}
+      - TZ=${TZ:-Europe/Paris}
+    volumes:
+      - ./prowlarr/config:/config
+    ports:
+      - 9696:9696
+    restart: unless-stopped
+
+  sonarr:
+    image: lscr.io/linuxserver/sonarr:latest
+    container_name: sonarr
+    environment:
+      - PUID=${PUID:-1000}
+      - PGID=${PGID:-1000}
+      - TZ=${TZ:-Europe/Paris}
+    volumes:
+      - ./sonarr/config:/config
+      - ${DATA_ROOT:-/data}/tv:/tv
+      - ${DATA_ROOT:-/data}/torrents:/downloads
+    ports:
+      - 8989:8989
+    restart: unless-stopped
+
+  radarr:
+    image: lscr.io/linuxserver/radarr:latest
+    container_name: radarr
+    environment:
+      - PUID=${PUID:-1000}
+      - PGID=${PGID:-1000}
+      - TZ=${TZ:-Europe/Paris}
+    volumes:
+      - ./radarr/config:/config
+      - ${DATA_ROOT:-/data}/movies:/movies
+      - ${DATA_ROOT:-/data}/torrents:/downloads
+    ports:
+      - 7878:7878
+    restart: unless-stopped
+
+  # Bazarr's mount points must match Radarr's and Sonarr's exactly. The *arr
+  # apps hand Bazarr file paths, and Bazarr has to find them at the same place.
+  bazarr:
+    image: lscr.io/linuxserver/bazarr:latest
+    container_name: bazarr
+    depends_on:
+      - radarr
+      - sonarr
+    environment:
+      - PUID=${PUID:-1000}
+      - PGID=${PGID:-1000}
+      - TZ=${TZ:-Europe/Paris}
+    volumes:
+      - ./bazarr/config:/config
+      - ${DATA_ROOT:-/data}/movies:/movies   # same as radarr
+      - ${DATA_ROOT:-/data}/tv:/tv           # same as sonarr
+    ports:
+      - 6767:6767
+    restart: unless-stopped
+
+  # Seerr replaced Jellyseerr and Overseerr when the two projects merged in
+  # February 2026. fallenbagel/jellyseerr gets no more updates.
+  #
+  # The Seerr image has no init process, so `init: true` is required.
+  # It runs as user `node` (UID 1000) regardless of PUID, so ./seerr/config
+  # must be owned by 1000:1000.
+  seerr:
+    image: ghcr.io/seerr-team/seerr:v3
+    init: true
+    container_name: seerr
+    hostname: seerr
+    environment:
+      - TZ=${TZ:-Europe/Paris}
+    volumes:
+      - ./seerr/config:/app/config
+    ports:
+      - 5055:5055
+    restart: unless-stopped
+
+  # Pinned to an exact version on purpose, do not switch to latest.
+  # Each Jellyfin upgrade runs a database migration that cannot be undone
+  # without restoring a backup. See docs/migration-2026-09.md.
+  #
+  # Without `hostname`, Jellyfin names itself after the container ID, which
+  # changes every time the container is recreated.
+  jellyfin:
+    image: lscr.io/linuxserver/jellyfin:12.1ubu2604-ls50
+    container_name: jellyfin
+    hostname: jellyfin
+    environment:
+      - PUID=${PUID:-1000}
+      - PGID=${PGID:-1000}
+      - TZ=${TZ:-Europe/Paris}
+    volumes:
+      - ./jellyfin/config:/config
+      - ${DATA_ROOT:-/data}/tv:/data/tv
+      - ${DATA_ROOT:-/data}/movies:/data/movies
+    devices:
+      # Intel iGPU for QuickSync. The LXC has to expose the render node
+      # owned by PGID (dev0: ... gid=PGID), see docs/lxc-proxmox.md.
+      - /dev/dri:/dev/dri
+    ports:
+      - 8096:8096
+    restart: unless-stopped
